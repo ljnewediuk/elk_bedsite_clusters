@@ -1,0 +1,108 @@
+### From: https://eurekastatistics.com/calculating-a-distance-matrix-for-geographic-points-using-r/###
+
+### Load Packages ===
+require(gdistance)
+require(data.table)
+require(Imap)
+require(caret)
+
+### Load Data ===
+dat <- fread('input/test_dat.csv')
+
+
+ReplaceLowerOrUpperTriangle <- function(m, triangle.to.replace){
+  # If triangle.to.replace="lower", replaces the lower triangle of a square matrix with its upper triangle.
+  # If triangle.to.replace="upper", replaces the upper triangle of a square matrix with its lower triangle.
+  
+  if (nrow(m) != ncol(m)) stop("Supplied matrix must be square.")
+  if      (tolower(triangle.to.replace) == "lower") tri <- lower.tri(m)
+  else if (tolower(triangle.to.replace) == "upper") tri <- upper.tri(m)
+  else stop("triangle.to.replace must be set to 'lower' or 'upper'.")
+  m[tri] <- t(m)[tri]
+  return(m)
+}
+
+GeoDistanceInMetresMatrix <- function(df.geopoints){
+  # Returns a matrix (M) of distances between geographic points.
+  # M[i,j] = M[j,i] = Distance between (df.geopoints$lat[i], df.geopoints$lon[i]) and
+  # (df.geopoints$lat[j], df.geopoints$lon[j]).
+  # The row and column names are given by df.geopoints$name.
+  
+  GeoDistanceInMetres <- function(g1, g2){
+    # Returns a vector of distances. (But if g1$index > g2$index, returns zero.)
+    # The 1st value in the returned vector is the distance between g1[[1]] and g2[[1]].
+    # The 2nd value in the returned vector is the distance between g1[[2]] and g2[[2]]. Etc.
+    # Each g1[[x]] or g2[[x]] must be a list with named elements "index", "lat" and "lon".
+    # E.g. g1 <- list(list("index"=1, "lat"=12.1, "lon"=10.1), list("index"=3, "lat"=12.1, "lon"=13.2))
+    DistM <- function(g1, g2){
+      require("Imap")
+      return(ifelse(g1$index > g2$index, 0, gdist(lat.1=g1$lat, lon.1=g1$lon, lat.2=g2$lat, lon.2=g2$lon, units="m")))
+    }
+    return(mapply(DistM, g1, g2))
+  }
+  
+  n.geopoints <- nrow(df.geopoints)
+  
+  # The index column is used to ensure we only do calculations for the upper triangle of points
+  df.geopoints$index <- 1:n.geopoints
+  
+  # Create a list of lists
+  list.geopoints <- by(df.geopoints[,c("index", "lat", "lon")], 1:n.geopoints, function(x){return(list(x))})
+  
+  # Get a matrix of distances (in metres)
+  mat.distances <- ReplaceLowerOrUpperTriangle(outer(list.geopoints, list.geopoints, GeoDistanceInMetres), "lower")
+  
+  # Set the row and column names
+  rownames(mat.distances) <- df.geopoints$name
+  colnames(mat.distances) <- df.geopoints$name
+  
+  return(mat.distances)
+}
+
+
+cluster_distance <- function(df, dist_btwn){
+  
+  pt_matrix <- data.table()
+  
+  for(i in 1:nrow(df)){
+    not_pt <- df[!i,]
+    pt_row <- data.table(name=df[i,]$name)
+    for(j in 1:nrow(not_pt)){
+      pt_dist <- gdist(lat.1=df[i,]$lat, lon.1=df[i,]$lon, lat.2=not_pt[j,]$lat, lon.2=not_pt[j,]$lon, units="m")
+      pt_row <- cbind(pt_row, pt_dist)
+    }
+    pt_name <- as.character(lapply(seq(1,(ncol(pt_row)-1),1), function(x) paste(x, 'pt', sep='_')))
+    colnames(pt_row)[2:ncol(pt_row)] <- pt_name
+    pt_matrix <- rbind(pt_matrix, pt_row)
+  }
+  
+  clust_matrix <- data.table()
+  for(k in 1:nrow(pt_matrix)){
+    clust_size <- length(which(pt_matrix[k,]<dist_btwn))
+    if(clust_size>0){
+      clust_row <- data.table(pt=k, n_within_d=clust_size)
+      clust_matrix <- rbind(clust_matrix, clust_row)
+    }
+  }
+  
+  return(clust_matrix)
+  
+}
+
+# - Clusters should have point at central date/time of suspected cluster,
+#   and some number of points before and after, based on the 95% CI for 
+#   time range of all clusters
+# - For each cluster, calculate the avg. number of points within 
+#   seq(5, 30, 1) m of cluster
+# - Plot distributions of correct/incorrect clusters to visualize difference
+# - Do t-tests to figure out at which distance the correct/incorrect clusters
+#   have a significantly different number of points within
+# - Plot the smoothed GAM for mean(difference)~distance
+
+# - For actual predictions, go through rolling window of n rows at a time
+#   and calculate the N within distance
+
+frollapply(clust_matrix$n_within_d, 3, mean, align='center')
+
+
+
