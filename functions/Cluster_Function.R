@@ -1,3 +1,22 @@
+######################################################
+######################################################
+###                                                ###
+###              F1: CLUSTER FUNCTION              ###
+###                                                ###
+######################################################
+######################################################
+## 
+## Returns the number of other points ('n_within_d')
+## within a given distance of each point (row) within
+## a cluster (df). 
+## The following columns are required:
+##      - 'lon': Longitude
+##      - 'lat': Latitude
+##      - 'name': ID column for each row
+## The following needs to be specified:
+##      - 'df': The data frame
+##      - 'dist_btwn': The distance from the focal
+##         point within which to count points
 
 ### Load Packages ===
 require(gdistance)
@@ -5,10 +24,7 @@ require(data.table)
 require(Imap)
 require(caret)
 
-### Load Data ===
-dat <- fread('input/test_dat.csv')
-
-
+### Function ===
 cluster_distance <- function(df, dist_btwn){
   
   pt_matrix <- data.table()
@@ -33,25 +49,8 @@ cluster_distance <- function(df, dist_btwn){
       clust_matrix <- rbind(clust_matrix, clust_row)
     }
   }
-  
+
   return(clust_matrix)
   
 }
-
-# - Clusters should have point at central date/time of suspected cluster,
-#   and some number of points before and after, based on the 95% CI for 
-#   time range of all clusters
-# - For each cluster, calculate the avg. number of points within 
-#   seq(5, 30, 1) m of cluster
-# - Plot distributions of correct/incorrect clusters to visualize difference
-# - Do t-tests to figure out at which distance the correct/incorrect clusters
-#   have a significantly different number of points within
-# - Plot the smoothed GAM for mean(difference)~distance
-
-# - For actual predictions, go through rolling window of n rows at a time
-#   and calculate the N within distance
-
-frollapply(clust_matrix$n_within_d, 3, mean, align='center')
-
-
 
