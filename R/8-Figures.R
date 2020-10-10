@@ -4,7 +4,7 @@ libs <- c('data.table', 'ggplot2', 'cowplot', 'grid', 'gridExtra')
 lapply(libs, require, character.only=TRUE)
 
 ### Load data ===
-model_data <- readRDS('output/model_data32m.rds')
+model_data <- readRDS('input/model_data32m.rds')
 dat_sens <- readRDS('output/dat_sens.rds')
 
 # Factor "correct"
@@ -56,7 +56,7 @@ mean_diff_plot <- ggplot(dat_sens, aes(x=distance, y=difference)) +
   theme(panel.background = element_rect(fill='white'), panel.grid = element_blank(), panel.border = element_rect(colour='black', fill='NA'), 
         axis.text = element_text(colour='black', size=18), axis.title.y = element_text(colour='black', size=22, vjust=4), 
         axis.title.x = element_blank(), plot.margin = unit(c(0.5,0.5,1,1), 'cm')) +
-  ylab('Mean (correct-incorrect points)') + xlab('NN distance between points (m)')
+  ylab('Mean (correct-incorrect points)') + xlab('Buffer distance (m)')
 
 # Points with 80% CI at range of NN distances
 nn_dist_plot <- ggplot(dat_sens) + 
@@ -68,7 +68,7 @@ nn_dist_plot <- ggplot(dat_sens) +
         axis.text = element_text(colour='black', size=18), axis.title.y = element_text(colour='black', size=22, vjust=4), 
         axis.title.x = element_blank(), plot.margin = unit(c(0.5,0.5,1,1), 'cm')) +
   scale_y_continuous(breaks = c(0,2.25,4.5,6.75,9), labels = c('0.00', '0.25', '0.50', '0.75', '1.00')) +
-  ylab('Proportion points within NN distance')
+  ylab('Proportion points within buffer')
 
 ##################
 ### Save plots ===
@@ -79,7 +79,7 @@ pred_grobs <- plot_grid(pred_plots[[1]], pred_plots[[2]], pred_plots[[3]], ncol=
 
 # Save plot TIFF of NN distance
 separation_grobs <- plot_grid(nn_dist_plot, mean_diff_plot, ncol=2, nrow=1, align='v', labels=c('A','B'), 
-                              label_x =c(0.3,0.3), label_y=c(0.9,0.9), label_size=29)
+                              label_x =c(0.2,0.2), label_y=c(0.9,0.9), label_size=29)
 # tiff('figures/NN_distance.tiff', width = 12, height = 7, units = 'in', res = 300)
-grid.arrange(arrangeGrob(separation_grobs, bottom = textGrob('NN distance between points (m)', gp=gpar(fontsize=23), vjust=0.3)))
+grid.arrange(arrangeGrob(separation_grobs, bottom = textGrob('Buffer distance (m)', gp=gpar(fontsize=23), vjust=0.3)))
 
