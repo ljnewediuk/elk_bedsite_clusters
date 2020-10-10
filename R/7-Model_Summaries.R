@@ -8,9 +8,13 @@ lapply(libs, require, character.only=TRUE)
 nn_dist <- 32
 # Define algorithms
 alg_list <- c('rpart', 'knn', 'lda', 'nb', 'svmRadial')
-# Load
+# Load k-fold models
 for(alg in alg_list){
   assign(paste(alg, 'results', sep='_'), readRDS(paste('results/', paste(nn_dist, paste('m_', paste(alg, 'results.rds', sep='_'), sep=''), sep=''), sep='')))
+}
+# Optionally load individually blocked models
+for(alg in alg_list){
+  assign(paste(alg, 'results', sep='_'), readRDS(paste('results/', paste(nn_dist, paste('m_', paste(alg, 'results_blocked.rds', sep='_'), sep=''), sep=''), sep='')))
 }
 
 ### Compile accuracy ===
@@ -41,13 +45,6 @@ for(metric in c('Accuracy', 'Specificity', 'Sensitivity')){
   }
 
   assign(paste('alg', metric, sep='_'), alg_metric)
-  
-}
-
-
-for(metric in c('Accuracy', 'Specificity', 'Sensitivity')){
-  
-  saveRDS(get(paste('alg', metric, sep='_')), paste('results/', paste(nn_dist, paste('m_model_', paste(metric, '.rds', sep=''), sep=''), sep=''), sep=''))
   
 }
 
