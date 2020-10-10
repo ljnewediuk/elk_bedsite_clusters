@@ -9,6 +9,7 @@ require(geosphere)
 ### Load Data ===
 dat <- fread('input/loc_dat.csv')
 clust_info <- fread('input/clust_dat.csv')
+nn_dat <- readRDS('input/avg_nn_dat.rds')
 
 ### Set m distance within which to calculate NN ===
 nn_dist <- 32
@@ -26,7 +27,8 @@ for(i in unique(clust_info$uid)){
 }
 
 model_data <- merge(clust_dat, clust_info, by='uid')
+model_data <- merge(model_data, nn_dat, by='uid')
 
 ### Save model data ===
-saveRDS(model_data, paste('output/model_data', paste(nn_dist, 'm.rds', sep=''), sep=''))
+saveRDS(model_data, paste('input/model_data', paste(nn_dist, 'm.rds', sep=''), sep=''))
 
