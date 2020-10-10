@@ -13,9 +13,9 @@ for(alg in alg_list){
   assign(paste(alg, 'results', sep='_'), readRDS(paste('results/', paste(nn_dist, paste('m_', paste(alg, 'results.rds', sep='_'), sep=''), sep=''), sep='')))
 }
 # Optionally load individually blocked models
-for(alg in alg_list){
-  assign(paste(alg, 'results', sep='_'), readRDS(paste('results/', paste(nn_dist, paste('m_', paste(alg, 'results_blocked.rds', sep='_'), sep=''), sep=''), sep='')))
-}
+# for(alg in alg_list){
+#   assign(paste(alg, 'results', sep='_'), readRDS(paste('results/', paste(nn_dist, paste('m_', paste(alg, 'results_blocked.rds', sep='_'), sep=''), sep=''), sep='')))
+# }
 
 ### Compile accuracy ===
 # Initiate data table
