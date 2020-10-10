@@ -1,13 +1,13 @@
 
 ### Load Packages ===
-libs <- c('data.table', 'rsample', 'tune', 'caret', 'recipes')
+libs <- c('data.table', 'rsample', 'tune', 'caret', 'recipes', 'stringr')
 lapply(libs, require, character.only=TRUE)
 
 ### Set NN distance ===
 nn_dist <- 32
 
 ### Load Data ===
-model_data <- readRDS(paste('output/model_data', paste(nn_dist, 'm.rds', sep=''), sep=''))
+model_data <- readRDS(paste('input/model_data', paste(nn_dist, 'm.rds', sep=''), sep=''))
 
 # Factor "correct" for classification
 model_data$correct <- factor(model_data$correct)
@@ -24,7 +24,7 @@ for(i in 19:nrow(model_data)){
 
 ### Create data_table for covariate sets ===
 # Specify covariates
-global_covs <- c('n_within_dist', 'beds_in_20_m', 'dist_nearest_pt')
+global_covs <- c('n_within_dist', 'beds_in_20_m', 'dist_nearest_pt', 'nn_avg')
 # Create table
 cov_list <- data.table()
 for(h in 1:length(global_covs)){
@@ -79,7 +79,7 @@ for(g in unique(cov_list$combo)){
       
       ### Organize data ===
       # Subset only relevant columns for modeling
-      kfold_train <- data.table(correct=dsample_data$correct, beds_in_20_m=dsample_data$beds_in_20_m, n_within_dist=dsample_data$n_within_dist, dist_nearest_pt=dsample_data$dist_nearest_pt)
+      kfold_train <- data.table(correct=dsample_data$correct, beds_in_20_m=dsample_data$beds_in_20_m, n_within_dist=dsample_data$n_within_dist, dist_nearest_pt=dsample_data$dist_nearest_pt, nn_avg=dsample_data$nn_avg)
       
       ### Select models by adjusting tuning parameters ===
       for(alg in alg_list){
