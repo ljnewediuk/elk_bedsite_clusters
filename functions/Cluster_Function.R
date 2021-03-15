@@ -1,9 +1,5 @@
 ######################################################
-######################################################
-###                                                ###
-###              F1: CLUSTER FUNCTION              ###
-###                                                ###
-######################################################
+#########       F1: CLUSTER FUNCTION          ########
 ######################################################
 ## 
 ## Returns the number of other points ('n_within_d')
@@ -19,10 +15,9 @@
 ##         point within which to count points
 
 ### Load Packages ===
-require(gdistance)
-require(data.table)
-require(Imap)
-require(caret)
+library(gdistance)
+library(data.table)
+library(Imap)
 
 ### Function ===
 cluster_distance <- function(df, dist_btwn){
