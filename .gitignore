@@ -6,4 +6,6 @@
 
 figures/
 spatial/
+input/
+output/
 .Rproj.user
